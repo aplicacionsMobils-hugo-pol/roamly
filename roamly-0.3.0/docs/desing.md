@@ -150,3 +150,32 @@ b) En caso de no tener ningun viaje previamente se debe crear un viaje
 2. Otra decisión a nivel de diseño ha sido en el momento de crear un nuevo Trip, immediatamente cargamos la lista de Trips
 que tenemos en base de datos. Esto nos ha permitido que al crear un nuevo Trip no tengamos problemas de actualización de datos
 y no tener problemas al añadir itinierarios a ese viaje.
+
+
+**Sprint04**
+Para poder personalizar los viajes a cada usuario, he añadido la siguiente información a los Trips:
+- UserId
+
+Y luego para mantener los datos de los usuarios en la base de datos, he añadido la siguiente información a los Users:
+- val id: Int,
+- val userId: String,
+- val username: String,
+- val name: String,
+- val email: String,
+- val phoneNumber: String,
+- val birthdate: Long,
+- val address: String,
+- val country: String,
+- val acceptEmails: Boolean,
+- val profilePictureUrl: String? = null,
+- val bio: String = "",
+- val followers: Int = 0,
+- val following: Int = 0,
+- val totalLikes: Int = 0,
+- val uploadedRoutes: Int = 0
+
+Además, he creado la tabla de AccessLog, para almacenar los logs de acceso a la aplicación:
+- val id: Int = 0,
+- val userId: Int,
+- val action: String, (Si se han dado de alta, si se han logueado o si se han salido de la app)
+- val timestamp: Long

@@ -88,8 +88,15 @@ T3. Testing and Debugging (2 Points)
 
 • T3.4 Update documentation with database schema and usage at design.md. --> Hugo/Pol
 
+
+**Sprint04**
+A causa de la separación física de los miembros del grupo, todas las tascas las he hecho yo mismo (Pol).
+
 **Anotaciones**
 
-1. Finalmente en el sprint anterior fijamos el multi-language.
+1. Queda pendiente arreglar la parte visual de feedback de otras prácticas. La parte de la lógica está implementada y funciona correctamente, pero la parte visual no se ha podido implementar
+   a causa de la falta de tiempo y de la separación física entre los miembros del grupo. Se ha tenido prioridad sobre la funcionalidad y no la estética visual.
 
 2. En la implementación queda pendiente la implementación CRUD de las entidades no demandadas en el sprint.
+
+3. Ver la base de datos en Android Studio --> users, trip, itinerary, accesslogs...
