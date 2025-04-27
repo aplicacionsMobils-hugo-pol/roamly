@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,7 +46,10 @@ import com.example.roamly.ui.viewmodel.RegisterViewModel
 
 
 @Composable
-fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = hiltViewModel(), authViewModel: AuthViewModel) {
+fun RegisterScreen(navController: NavController,
+                   viewModel: RegisterViewModel = hiltViewModel(),
+                   authViewModel: AuthViewModel
+) {
 
     val context = LocalContext.current
     val authState by authViewModel.authState.observeAsState()
@@ -70,6 +74,17 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
         }
     }
 
+    val datePickerDialog = remember {
+        android.app.DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val selectedDate = "$dayOfMonth/${month + 1}/$year"
+                viewModel.onBirthdateChanged(selectedDate)
+            },
+            2000, 0, 1 // default date
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -85,7 +100,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
                 contentDescription = "Roamly Logo",
                 modifier = Modifier.size(100.dp)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            //Spacer(modifier = Modifier.height(20.dp))
 
             // Nombre Completo
             OutlinedTextField(
@@ -105,7 +120,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
             viewModel.storeNameError?.let {
                 Text(text = it, color = Color.Red, fontSize = 12.sp)
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            //Spacer(modifier = Modifier.height(12.dp))
 
             // Email
             OutlinedTextField(
@@ -148,7 +163,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
             viewModel.passwordError?.let {
                     Text(it, color = Color.Red, fontSize = 12.sp)
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            //Spacer(modifier = Modifier.height(12.dp))
 
             // Confirmar Contraseña
             OutlinedTextField(
@@ -172,15 +187,69 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
             }
             Spacer(modifier = Modifier.height(20.dp))
 
+            /*** Phone Number ***/
+            CustomTextField(
+                value = viewModel.phoneNumber,
+                onValueChange = { viewModel.onPhoneNumberChanged(it) },
+                placeholder = "Phone Number",
+                keyboardType = KeyboardType.Phone
+            )
+
+            /*** Address ***/
+            CustomTextField(
+                value = viewModel.address,
+                onValueChange = { viewModel.onAddressChanged(it) },
+                placeholder = "Address"
+            )
+
+            /*** Country ***/
+            CustomTextField(
+                value = viewModel.country,
+                onValueChange = { viewModel.onCountryChanged(it) },
+                placeholder = "Country"
+            )
+
+            //Spacer(modifier = Modifier.height(12.dp))
+
+            /*** Birthdate Picker ***/
+            Button(
+                onClick = { datePickerDialog.show() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+            ) {
+                Text(
+                    text = if (viewModel.birthdate.isEmpty()) "Select Birthdate" else "Birthdate: ${viewModel.birthdate}",
+                    color = Color.Black
+                )            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            /*** Accept Emails Switch ***/
+            Switch(
+                checked = viewModel.acceptEmails,
+                onCheckedChange = { viewModel.onAcceptEmailsChanged(it) }
+            )
+            Text(text = "Accept emails about news and updates", fontSize = 14.sp, color = Color.Gray)
+
+
+            //Spacer(modifier = Modifier.height(20.dp))
+
             // Botón de Registro
             Button(
                 onClick = {
-                    println("✅ Botón Sign Up presionado")
                     val isValid = viewModel.validateAllFields()
-                    println("¿Validación exitosa? $isValid")
                     if (isValid) {
-                        println("➡️ Registrando usuario en Firebase...")
-                        authViewModel.signup(viewModel.email, viewModel.password)
+                        authViewModel.signup(
+                            viewModel.email,
+                            viewModel.password,
+                            username = viewModel.email.substringBefore("@"),
+                            name = viewModel.storeName,
+                            phoneNumber = viewModel.phoneNumber,
+                            birthdate = viewModel.birthdate,
+                            address = viewModel.address,
+                            country = viewModel.country,
+                            acceptEmails = viewModel.acceptEmails
+                        )
                     }
                 },
                 modifier = Modifier
@@ -192,7 +261,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
                 Text(text = stringResource(id = R.string.sign_up), color = Color.White, fontSize = 18.sp)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            //Spacer(modifier = Modifier.height(10.dp))
 
             // Ir a Login
             TextButton(onClick = {
@@ -202,5 +271,37 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
                 Text(text = stringResource(id = R.string.already_have_account), color = Color.Gray)
             }
         }
+    }
+}
+
+@Composable
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    error: String? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
+) {
+    Column {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(placeholder, color = Color.Gray) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            isError = error != null,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Gray,
+                unfocusedBorderColor = Color.LightGray,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black
+            )
+        )
+        error?.let {
+            Text(text = it, color = Color.Red, fontSize = 12.sp)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

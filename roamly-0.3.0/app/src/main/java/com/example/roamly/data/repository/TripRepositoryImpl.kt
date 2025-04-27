@@ -45,4 +45,7 @@ class TripRepositoryImpl @Inject constructor(
         tripDao.deleteTrip(id)
         return true
     }
+    override suspend fun getTripsByUserId(userId: Int): List<Trip> {
+        return tripDao.getTripsByUserId(userId).map { it.toDomain() }
+    }
 }

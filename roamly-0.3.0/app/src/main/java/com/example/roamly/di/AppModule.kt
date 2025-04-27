@@ -16,6 +16,7 @@ import com.example.roamly.data.repository.ItineraryRepositoryImpl
 import com.example.roamly.domain.repository.TripRepository
 import com.example.roamly.data.repository.TripRepositoryImpl
 import com.example.roamly.data.repository.UserRepositoryImpl
+import com.example.roamly.domain.repository.AccessLogRepository
 import com.example.roamly.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -85,7 +86,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAccessLogRepository(accessLogDao: AccessLogDao): AccessLogRepositoryImpl {
+    fun provideAccessLogRepository(accessLogDao: AccessLogDao): AccessLogRepository {
         return AccessLogRepositoryImpl(accessLogDao)
     }
 

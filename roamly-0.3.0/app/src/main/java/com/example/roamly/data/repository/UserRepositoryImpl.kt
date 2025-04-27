@@ -29,7 +29,7 @@ class UserRepositoryImpl @Inject constructor(
         return userDao.deleteUser(id) > 0
     }
 
-    suspend fun addUser(user: User): Boolean {
+    override suspend fun insertUser(user: User): Boolean {
         return userDao.addUser(user.toEntity()) > 0
     }
 }

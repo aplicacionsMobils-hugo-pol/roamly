@@ -4,13 +4,29 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.roamly.data.local.entity.AccessLogEntity
+import com.example.roamly.domain.models.User
+import com.example.roamly.domain.repository.AccessLogRepository
+import com.example.roamly.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val accessLogRepository: AccessLogRepository,
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val TAG = "AuthViewModel"
     private val auth : FirebaseAuth = FirebaseAuth.getInstance()
+
+    private var _currentUser: User? = null
+    private val _userState = MutableLiveData<User?>()
+    val userState: LiveData<User?> = _userState
 
     private val _authState = MutableLiveData<AuthState>()
     val authState: LiveData<AuthState> = _authState
@@ -37,7 +53,11 @@ class AuthViewModel : ViewModel() {
         if(auth.currentUser==null){
             _authState.value = AuthState.Unauthenticated
         }else{
-            _authState.value = AuthState.Authenticated
+            viewModelScope.launch {
+                _currentUser = userRepository.getUserById(auth.currentUser?.uid.hashCode())
+                _userState.value = _currentUser
+                _authState.value = AuthState.Authenticated
+            }
         }
     }
 
@@ -82,6 +102,16 @@ class AuthViewModel : ViewModel() {
 
                     if (user != null && user.isEmailVerified) {
                         _authState.value = AuthState.Authenticated
+                        viewModelScope.launch {
+                            _currentUser = userRepository.getUserById(user.uid.hashCode())
+                            _userState.value = _currentUser
+                            val accessLog = AccessLogEntity(
+                                userId = user.uid.hashCode(),
+                                action = "Login Successful",
+                                timestamp = System.currentTimeMillis()
+                            )
+                            accessLogRepository.insertAccessLog(accessLog)
+                        }
                     } else {
                         _authState.value = AuthState.Error("Email address not verified. Please check your email before continuing.")
                         sendEmailVerification()
@@ -93,7 +123,16 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    fun signup(email : String,password : String){
+    fun signup(email : String,
+               password : String,
+               username: String,
+               name: String,
+               phoneNumber: String,
+               birthdate: String,
+               address: String,
+               country: String,
+               acceptEmails: Boolean
+    ){
 
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("Email or password can't be empty")
@@ -103,6 +142,31 @@ class AuthViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(email,password)
             .addOnCompleteListener{task->
                 if (task.isSuccessful){
+                    val user = auth.currentUser
+                    if (user != null) {
+                        val newUser = User(
+                            id = 0, // id autogenerado en Room
+                            userId = user.uid,
+                            username = username,
+                            name = name,
+                            email = email,
+                            phoneNumber = phoneNumber,
+                            birthdate = birthdate.toLongOrNull() ?: 0L,
+                            address = address,
+                            country = country,
+                            acceptEmails = acceptEmails
+                        )
+
+                        viewModelScope.launch {
+                           userRepository.insertUser(newUser)
+                            val accessLog = AccessLogEntity(
+                                userId = user.uid.hashCode(),
+                                action = "Signup Successful",
+                                timestamp = System.currentTimeMillis()
+                            )
+                            accessLogRepository.insertAccessLog(accessLog)
+                        }
+                    }
                     sendEmailVerification()
                     auth.signOut()
                     _authState.value = AuthState.EmailVerificationSent("Please, confirm your email")
@@ -115,6 +179,17 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signout(){
+        val user = auth.currentUser
+        if (user != null) {
+            viewModelScope.launch {
+                val accessLog = AccessLogEntity(
+                    userId = user.uid.hashCode(),
+                    action = "Logout",
+                    timestamp = System.currentTimeMillis()
+                )
+                accessLogRepository.insertAccessLog(accessLog)
+            }
+        }
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
     }

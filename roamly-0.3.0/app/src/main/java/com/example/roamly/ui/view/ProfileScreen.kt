@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +26,7 @@ import com.example.roamly.R
 import com.example.roamly.domain.repository.UserRepository222
 import com.example.roamly.domain.models.User
 import com.example.roamly.ui.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 enum class ProfileSection {
     ROUTES, FAVORITES, COMPLETED
@@ -32,7 +34,9 @@ enum class ProfileSection {
 
 @Composable
 fun ProfileScreen(navController: NavController, authViewModel: AuthViewModel) {
-    val user = UserRepository222.currentUser
+    val userState by authViewModel.userState.observeAsState()
+    val authState by authViewModel.authState.observeAsState()
+
     var selectedSection by remember { mutableStateOf(ProfileSection.ROUTES) }
 
     Scaffold(
@@ -44,8 +48,8 @@ fun ProfileScreen(navController: NavController, authViewModel: AuthViewModel) {
                 .background(Color.White)
                 .padding(padding)
         ) {
-            ProfileHeader(user)
-            ProfileStats(user)
+            ProfileHeader(userState)
+            ProfileStats(userState)
             ProfileTabs(selectedSection) { selectedSection = it }
 
             when (selectedSection) {
@@ -58,7 +62,7 @@ fun ProfileScreen(navController: NavController, authViewModel: AuthViewModel) {
 }
 
 @Composable
-fun ProfileHeader(user: User) {
+fun ProfileHeader(user: User?) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -82,34 +86,46 @@ fun ProfileHeader(user: User) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    user.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                if (user != null) {
+                    Text(
+                        user.name,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
 
 
             }
-            Text(
-                user.bio,
-                fontSize = 12.sp,
-                color = Color.Black
-            )
+            if (user != null) {
+                Text(
+                    user.bio,
+                    fontSize = 12.sp,
+                    color = Color.Black
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ProfileStats(user: User) {
+fun ProfileStats(user: User?) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        StatItem(value = user.uploadedRoutes, label = stringResource(id = R.string.routes))
-        StatItem(value = user.followers, label = stringResource(id = R.string.followers))
-        StatItem(value = user.following, label = stringResource(id = R.string.following))
-        StatItem(value = user.totalLikes, label = stringResource(id = R.string.likes))
+        if (user != null) {
+            StatItem(value = user.uploadedRoutes, label = stringResource(id = R.string.routes))
+        }
+        if (user != null) {
+            StatItem(value = user.followers, label = stringResource(id = R.string.followers))
+        }
+        if (user != null) {
+            StatItem(value = user.following, label = stringResource(id = R.string.following))
+        }
+        if (user != null) {
+            StatItem(value = user.totalLikes, label = stringResource(id = R.string.likes))
+        }
     }
 }
 

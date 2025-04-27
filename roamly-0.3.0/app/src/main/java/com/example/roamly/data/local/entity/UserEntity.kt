@@ -1,10 +1,12 @@
 package com.example.roamly.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Entity(tableName = "users", primaryKeys = ["id"])
+@Entity(tableName = "Users")
 data class UserEntity(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val userId: String,
     val name: String,
     val username: String,

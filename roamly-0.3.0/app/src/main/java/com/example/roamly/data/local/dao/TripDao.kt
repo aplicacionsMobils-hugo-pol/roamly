@@ -24,5 +24,5 @@ interface TripDao {
     suspend fun updateTrip(trip: TripEntity): Int
 
     @Query("SELECT * FROM trips WHERE userId = :userId")
-    suspend fun getTripsByUser(userId: Int): List<TripEntity>
+    suspend fun getTripsByUserId(userId: Int): List<TripEntity>
 }

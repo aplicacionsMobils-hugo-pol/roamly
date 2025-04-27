@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.roamly.domain.models.Trip
 import com.example.roamly.domain.repository.TripRepository
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
@@ -16,25 +17,39 @@ class TripViewModel @Inject constructor(
     private val repository: TripRepository
 ) : ViewModel() {
 
+    private val TAG = "TripViewModel"
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
     private val _trips = mutableStateListOf<Trip>()
     val trips: List<Trip> get() = _trips
 
+    private var currentUserId: String? = null
+
     init {
+        val user = auth.currentUser
+        currentUserId = user?.uid
         loadTrips()
     }
 
     private fun loadTrips() {
-        Log.d("TripViewModel", "Cargando todos los viajes...")
+        Log.d(TAG, "Cargando viajes para el usuario actual...")
         _trips.clear()
         viewModelScope.launch {
-            _trips.addAll(repository.getAllTrips())
+            //_trips.addAll(repository.getAllTrips())
+            currentUserId?.let { userId ->
+                _trips.addAll(repository.getTripsByUserId(userId.hashCode()))
+                Log.d(TAG, "Viajes cargados: ${_trips.size} viajes encontrados para el usuario $userId.")
+            } ?: run {
+                Log.d(TAG, "No hay usuario autenticado.")
+            }
         }
         Log.d("TripViewModel", "Viajes cargados: ${_trips.size} viajes encontrados.")
     }
 
     fun addTrip(destination: String, startDate: Date, endDate: Date, budget: Double, notes: String, isFavorite: Boolean, coverImageUrl: String?) {
         if (destination.isNotEmpty()) {
-            Log.d("TripViewModel", "Intentando agregar un nuevo viaje a $destination.")
+            Log.d(TAG, "Intentando agregar un nuevo viaje a $destination.")
             val newTrip = Trip(
                 id = 0,
                 destination = destination,
@@ -44,7 +59,7 @@ class TripViewModel @Inject constructor(
                 notes = notes,
                 isFavorite = isFavorite,
                 coverImageUrl = coverImageUrl ?: "",
-                userId = 123, // Replace with actual user ID
+                userId = currentUserId!!.hashCode(),
                 itineraryItems = emptyList()
             )
 

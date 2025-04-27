@@ -19,6 +19,12 @@ class RegisterViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    var phoneNumber by mutableStateOf("")
+
+    var address by mutableStateOf("")
+
+    var country by mutableStateOf("")
+
     // Campos del formulario
     var email by mutableStateOf("")
         private set
@@ -61,6 +67,12 @@ class RegisterViewModel @Inject constructor(
         private set
 
     var pinCodeError by mutableStateOf<String?>(null)
+        private set
+
+    var birthdate by mutableStateOf("")
+        private set
+
+    var acceptEmails by mutableStateOf(false)
         private set
 
 
@@ -120,6 +132,16 @@ class RegisterViewModel @Inject constructor(
         return false
     }
 
+    fun onPhoneNumberChanged(newPhone: String) { phoneNumber = newPhone }
+
+    fun onAddressChanged(newAddress: String) { address = newAddress }
+
+    fun onCountryChanged(newCountry: String) { country = newCountry }
+
+    fun onBirthdateChanged(newValue: String) { birthdate = newValue }
+
+    fun onAcceptEmailsChanged(newValue: Boolean) { acceptEmails = newValue }
+
     // ==================================
     //  Lógica para validar todos los campos
     // ==================================
@@ -162,10 +184,11 @@ class RegisterViewModel @Inject constructor(
         email = ""
         password = ""
         confirmPassword = ""
-        storeNameError = null
-        emailError = null
-        passwordError = null
-        confirmPasswordError = null
+        phoneNumber = ""
+        address = ""
+        country = ""
+        birthdate = ""
+        acceptEmails = false
     }
 
 }
