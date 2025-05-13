@@ -1,6 +1,7 @@
 package com.example.roamly.di
 
 
+import HotelRepositoryImpl
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
@@ -10,6 +11,7 @@ import com.example.roamly.data.local.dao.AccessLogDao
 import com.example.roamly.data.local.dao.ItineraryDao
 import com.example.roamly.data.local.dao.TripDao
 import com.example.roamly.data.local.dao.UserDao
+import com.example.roamly.data.remote.api.HotelApiService
 import com.example.roamly.data.repository.AccessLogRepositoryImpl
 import com.example.roamly.domain.repository.ItineraryRepository
 import com.example.roamly.data.repository.ItineraryRepositoryImpl
@@ -17,6 +19,7 @@ import com.example.roamly.domain.repository.TripRepository
 import com.example.roamly.data.repository.TripRepositoryImpl
 import com.example.roamly.data.repository.UserRepositoryImpl
 import com.example.roamly.domain.repository.AccessLogRepository
+import com.example.roamly.domain.repository.HotelRepository
 import com.example.roamly.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -25,6 +28,8 @@ import dagger.hilt.components.SingletonComponent
 
 import com.example.roamly.ui.viewmodel.RegisterViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -99,4 +104,20 @@ object AppModule {
     fun provideAccessLogDao(db: AppDatabase): AccessLogDao {
         return db.accessLogDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideHotelApi(): HotelApiService {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.HOTELS_API_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(HotelApiService::class.java)
+    }
+
+    /* --- Repository --- */
+    @Provides
+    @Singleton
+    fun provideHotelRepository(api: HotelApiService, taskDao: TripDao): HotelRepository =
+        HotelRepositoryImpl(api, taskDao)
 }

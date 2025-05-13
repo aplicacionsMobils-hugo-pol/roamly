@@ -29,6 +29,8 @@ android {
             isMinifyEnabled = false
             manifestPlaceholders["MAPS_API_KEY"] =
                 providers.gradleProperty("MAPS_API_KEY").orElse(System.getenv("MAPS_API_KEY") ?: "")
+            buildConfigField("String", "HOTELS_API_URL", "\"http://13.39.162.212\"")
+            buildConfigField("String", "GROUP_ID", "\"G04\"")
         }
         release {
             isMinifyEnabled = false
@@ -37,6 +39,12 @@ android {
                 "proguard-rules.pro"
             )
             manifestPlaceholders["MAPS_API_KEY"] = providers.gradleProperty("MAPS_API_KEY").get()
+            buildConfigField("String", "GROUP_ID", "\"G04\"")
+            buildConfigField("String", "HOTELS_API_URL", "\"http://13.39.162.212\"")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -62,6 +70,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("com.squareup:javapoet:1.13.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
