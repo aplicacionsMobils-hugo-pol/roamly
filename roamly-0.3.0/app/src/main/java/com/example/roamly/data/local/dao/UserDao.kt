@@ -22,7 +22,7 @@ interface UserDao {
     suspend fun getUserByEmail(email: String): UserEntity?
 
     @Query("SELECT * FROM users WHERE id = :userId")
-    suspend fun getUserById(userId: Int): UserEntity?
+    suspend fun getUserById(userId: String): UserEntity?
 
     @Query("DELETE FROM users WHERE id = :id")
     suspend fun deleteUser(id: Int): Int

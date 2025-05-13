@@ -213,7 +213,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 },
                 confirmButton = {
                     Button(
-                        onClick = { // @ToDo
+                        onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 val isSuccess = sendRecoveryEmail(recoveryEmail)
                                 withContext(Dispatchers.Main) {

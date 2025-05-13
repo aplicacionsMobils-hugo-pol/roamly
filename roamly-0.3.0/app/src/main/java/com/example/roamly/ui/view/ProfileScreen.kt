@@ -34,7 +34,8 @@ enum class ProfileSection {
 
 @Composable
 fun ProfileScreen(navController: NavController, authViewModel: AuthViewModel) {
-    val userState by authViewModel.userState.observeAsState()
+//    val userState by authViewModel.userState.observeAsState()
+    val userState = UserRepository222.currentUser
     val authState by authViewModel.authState.observeAsState()
 
     var selectedSection by remember { mutableStateOf(ProfileSection.ROUTES) }

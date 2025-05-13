@@ -13,7 +13,7 @@ class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao
 ) : UserRepository {
 
-    override suspend fun getUserById(id: Int): User? {
+    override suspend fun getUserById(id: String): User? {
         return userDao.getUserById(id)?.toDomain()
     }
 

@@ -54,8 +54,10 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Unauthenticated
         }else{
             viewModelScope.launch {
-                _currentUser = userRepository.getUserById(auth.currentUser?.uid.hashCode())
-                _userState.value = _currentUser
+                auth.currentUser?.uid?.let { uid ->
+                    _currentUser = userRepository.getUserById(uid)
+                    _userState.value = _currentUser
+                }
                 _authState.value = AuthState.Authenticated
             }
         }
@@ -103,7 +105,7 @@ class AuthViewModel @Inject constructor(
                     if (user != null && user.isEmailVerified) {
                         _authState.value = AuthState.Authenticated
                         viewModelScope.launch {
-                            _currentUser = userRepository.getUserById(user.uid.hashCode())
+                            _currentUser = userRepository.getUserById(user.uid)
                             _userState.value = _currentUser
                             val accessLog = AccessLogEntity(
                                 userId = user.uid.hashCode(),
