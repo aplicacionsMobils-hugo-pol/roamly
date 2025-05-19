@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.example.roamly.R
 import com.example.roamly.ui.viewmodel.AuthViewModel
 
+
 enum class PlanningMode {
     EXPLORE, SEARCH, PROFILE
 }
@@ -43,7 +44,7 @@ fun HomeScreen(navController: NavController, authViewModel: AuthViewModel) {
         ) {
             when (selectedMode) {
                 PlanningMode.EXPLORE -> GlobeScreen()
-                PlanningMode.SEARCH -> SearchScreen()
+                PlanningMode.SEARCH -> SearchScreen(navController = navController)
                 PlanningMode.PROFILE -> ProfileScreen(navController, authViewModel)
 
             }

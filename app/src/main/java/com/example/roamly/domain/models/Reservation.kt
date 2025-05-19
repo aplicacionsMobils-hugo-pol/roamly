@@ -9,6 +9,6 @@ data class Reservation(
     val endDate: String,
     val guestName: String,
     val guestEmail: String,
-    val hotel: Hotel,
-    val room: Room
+    val hotel: Hotel?,
+    val room: Room?
 )

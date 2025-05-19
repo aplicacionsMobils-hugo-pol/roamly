@@ -35,8 +35,9 @@ fun ReservationDto.toDomain(): Reservation = Reservation(
     endDate    = end_date,
     guestName  = guest_name,
     guestEmail = guest_email,
-    hotel = hotel.toDomain(),   // HotelDto → Hotel
-    room  = room.toDomain()     // RoomDto  → Room
+    hotel = hotel?.toDomain(),
+    room  = room?.toDomain()
+     // RoomDto  → Room
 )
 
 fun ReserveRequest.toDto(): ReserveRequestDto = ReserveRequestDto(

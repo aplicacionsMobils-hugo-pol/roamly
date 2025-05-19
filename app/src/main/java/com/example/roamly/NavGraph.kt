@@ -49,5 +49,28 @@ fun NavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
             // Llamada a la pantalla ItineraryScreen
             ItineraryScreen(navController, tripId, tripName, authViewModel = authViewModel)
         }
+
+        composable(
+            route = "hotel/{hotelId}/{groupId}/{start}/{end}",
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.StringType },
+                navArgument("groupId") { type = NavType.StringType },
+                navArgument("start") { type = NavType.StringType },
+                navArgument("end") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getString("hotelId") ?: ""
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+            val start = backStackEntry.arguments?.getString("start") ?: ""
+            val end = backStackEntry.arguments?.getString("end") ?: ""
+
+            HotelDetailScreen(
+                hotelId = hotelId,
+                groupId = groupId,
+                start = start,
+                end = end,
+                navController = navController
+            )
+        }
     }
 }

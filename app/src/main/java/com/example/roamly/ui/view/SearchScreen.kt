@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,88 +15,116 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.roamly.R
 import com.example.roamly.domain.repository.TripRepository222
 import com.example.roamly.ui.components.TripCard
+import androidx.navigation.NavController
+import com.example.roamly.ui.viewmodel.BookViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen() {
-    var searchQuery by remember { mutableStateOf("") }
-    val filteredTrips = TripRepository222.trips.filter { it.destination.contains(searchQuery, ignoreCase = true) }
+fun SearchScreen(
+    navController: NavController,
+    vm: BookViewModel = hiltViewModel()
+) {
+    val ui by vm.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(stringResource(id = R.string.search), color = Color.Black, modifier = Modifier.weight(1f))
+    Column(Modifier.padding(16.dp)) {
 
-                        Box(
-                            modifier = Modifier
-                                .weight(2.5f)
-                                .height(40.dp)
-                                .background(Color(0xFFF0F0F5), shape = RoundedCornerShape(50))
-                                .padding(horizontal = 12.dp), // Espaciado interno
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Filled.Search,
-                                        contentDescription = "Search Icon",
-                                        tint = Color.Gray
-                                    )
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(0.dp), // Evita cortes extra
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedBorderColor = Color.Transparent,
-                                    focusedBorderColor = Color.Transparent,
-                                    cursorColor = Color.Black,
-                                    focusedTextColor = Color.Black,
-                                    unfocusedTextColor = Color.Black,
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent
-                                ),
-                                textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, color = Color.Black),
-                                singleLine = true,
-                                maxLines = 1
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
-                .padding(padding)
-                .padding(horizontal = 16.dp)
+        Text(
+            text = "Search Hotels",
+            style = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+
+        /* ───── Selector de ciudad ───── */
+        ExposedDropdownMenuBox(
+            expanded = ui.cityMenu,
+            onExpandedChange = { vm.toggleCityMenu() }
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = ui.city,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("City", color = Color.Black) },
+                leadingIcon = { Icon(Icons.Default.Place, null, tint = Color.Black) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.White,
+                    focusedIndicatorColor = Color(0xFF007AFF),
+                    unfocusedIndicatorColor = Color.LightGray,
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Black,
+                    cursorColor = Color.Black,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    disabledTextColor = Color.Black,
 
-            if (filteredTrips.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(id = R.string.no_destinations_found), fontSize = 18.sp, color = Color.Gray)
+                )
+            )
+
+            ExposedDropdownMenu(
+                expanded = ui.cityMenu,
+                onDismissRequest = { vm.toggleCityMenu() }
+            ) {
+                listOf("Barcelona", "Paris", "Londres").forEach { c ->
+                    DropdownMenuItem(
+                        text = { Text(c, color = Color.Black) },
+                        onClick = { vm.selectCity(c) }
+                    )
                 }
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(filteredTrips.size) { index ->
-                        TripCard(trip = filteredTrips[index])
-                    }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        DateField("Start Date", ui.startDate) { vm.pickStart(it) }
+        Spacer(Modifier.height(8.dp))
+        DateField("End Date", ui.endDate) { vm.pickEnd(it) }
+
+        Spacer(Modifier.height(16.dp))
+        Button(
+            onClick = { vm.search() },
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            ),
+            shape = RoundedCornerShape(10.dp),
+            border = ButtonDefaults.outlinedButtonBorder
+        ) {
+            Text("Search Hotels")
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (ui.loading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else {
+            if (ui.hotels.isNotEmpty()) {
+                HotelList(ui.hotels) { hotel ->
+                    navController.navigate(
+                        Screen.Hotel.create(
+                            hotel.id,
+                            vm.groupId,
+                            ui.startDate.toString(),
+                            ui.endDate.toString()
+                        )
+                    )
                 }
+            }
+
+            if (ui.message != null) {
+                Text(
+                    text = ui.message!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
     }

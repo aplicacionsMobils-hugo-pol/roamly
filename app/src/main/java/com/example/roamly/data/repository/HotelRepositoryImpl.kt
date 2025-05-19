@@ -1,3 +1,4 @@
+import android.util.Log
 import com.example.roamly.data.local.dao.TripDao
 import com.example.roamly.data.remote.api.HotelApiService
 import com.example.roamly.data.remote.mapper.toDomain
@@ -51,8 +52,9 @@ class HotelRepositoryImpl @Inject constructor(
 
     /* ---------- Reserve & Cancel (within group) ---------- */
     override suspend fun reserve(groupId: String, request: ReserveRequest): Reservation =
-        api.reserveRoom(groupId, request.toDto()).reservation.toDomain()
-
+        api.reserveRoom(groupId, request.toDto()).also {
+            Log.d("HotelRepositoryImpl", "Respuesta de reserva: $it")
+        }.reservation.toDomain()
     override suspend fun cancel(groupId: String, request: ReserveRequest): String =
         api.cancelReservation(groupId, request.toDto()).message
 

@@ -28,6 +28,8 @@ import dagger.hilt.components.SingletonComponent
 
 import com.example.roamly.ui.viewmodel.RegisterViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -107,9 +109,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideHotelApi(): HotelApiService {
+    fun provideHotelApi(
+        okHttpClient: OkHttpClient
+    ): HotelApiService {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.HOTELS_API_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(HotelApiService::class.java)
@@ -120,4 +125,23 @@ object AppModule {
     @Singleton
     fun provideHotelRepository(api: HotelApiService, taskDao: TripDao): HotelRepository =
         HotelRepositoryImpl(api, taskDao)
+
+    @Provides
+    @Singleton
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        val logging = HttpLoggingInterceptor()
+        logging.level = HttpLoggingInterceptor.Level.BODY
+        return logging
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+
 }

@@ -8,4 +8,5 @@ interface UserRepository {
     suspend fun updateUser(user: User): Boolean
     suspend fun deleteUser(id: Int): Boolean
     suspend fun insertUser(user: User): Boolean
+    suspend fun getUserByFirebaseUid(firebaseUid: String): User?
 }

@@ -32,4 +32,9 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun insertUser(user: User): Boolean {
         return userDao.addUser(user.toEntity()) > 0
     }
+
+    override suspend fun getUserByFirebaseUid(firebaseUid: String): User? {
+        return userDao.getUserByFirebaseUid(firebaseUid)?.toDomain()
+    }
+
 }
