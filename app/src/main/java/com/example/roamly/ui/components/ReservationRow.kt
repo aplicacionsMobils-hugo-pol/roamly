@@ -35,11 +35,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.roamly.BuildConfig
 import com.example.roamly.domain.models.Reservation
+import com.example.roamly.domain.models.Trip
 
 
 @Composable
 fun ReservationRow(
     res: Reservation,
+    trip: Trip?,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -106,6 +108,13 @@ fun ReservationRow(
                 Text("Price: €${res.room?.price ?: 0}")
                 Spacer(Modifier.height(8.dp))
                 Text(res.guestName)
+                val city = res.hotel?.address?.substringAfterLast(",")?.trim() ?: "Ciudad desconocida"
+                Text("Viaje: $city")
+
+                if (trip != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("Trip: ${trip.destination}", fontWeight = FontWeight.Medium)
+                }
             }
 
             IconButton(onClick = { askDelete = true }) {

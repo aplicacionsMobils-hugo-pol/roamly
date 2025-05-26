@@ -79,17 +79,6 @@ fun AllReservationsScreen(groups: Map<String, List<Reservation>>, vm: Reservatio
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            items(list) { res ->
-                Log.d("viewmodel", res.toString())
-                ReservationRow(
-                    res = res,
-                    onCancel = {
-
-                        Toast.makeText(context, "Esta pantalla es exclusiva del profesor", Toast.LENGTH_SHORT).show()
-                        //vm.cancel(res)
-                    }
-                )
-            }
 
         }
     }

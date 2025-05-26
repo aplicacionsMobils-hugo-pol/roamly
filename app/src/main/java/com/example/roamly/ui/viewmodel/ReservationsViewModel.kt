@@ -6,7 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.roamly.BuildConfig
 import com.example.roamly.domain.models.Reservation
+import com.example.roamly.domain.models.Trip
 import com.example.roamly.domain.repository.HotelRepository
+import com.example.roamly.domain.repository.TripRepository
+import com.example.roamly.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +21,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReservationsViewModel @Inject constructor(
-    private val repo: HotelRepository
+    private val repo: HotelRepository,
+    private val tripRepo: TripRepository,
+    private val userRepo: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReservationsUiState())
@@ -28,22 +33,37 @@ class ReservationsViewModel @Inject constructor(
 
     fun load() = viewModelScope.launch {
         _uiState.update { it.copy(loading = true) }
-        val email = auth.currentUser?.email
+        val user = auth.currentUser
+        val email = user?.email ?: return@launch
+        val uid = user.uid
+        val localUser = userRepo.getUserByFirebaseUid(uid) ?: return@launch
+
+        val reservations = repo.getGroupReservations(BuildConfig.GROUP_ID, email)
+        val trips = tripRepo.getAllTrips().filter { it.userId == localUser.userId.hashCode() }
         //IMPORTANTE USANDO EL GROUP ID!!!
         //AQUI tambien buscar el correo del usuario authenticado!!
-        val res = if (email.isNullOrEmpty()) {
-            repo.getGroupReservations(BuildConfig.GROUP_ID, null)
-        } else {
-            repo.getGroupReservations(BuildConfig.GROUP_ID, email)
+        val combined = reservations.map { reservation ->
+            val relatedTrip = trips.find { trip ->
+                trip.destination == reservation.hotel?.name &&
+                        trip.startDate.toString().startsWith(reservation.startDate) &&
+                        trip.endDate.toString().startsWith(reservation.endDate)
+            }
 
+            ReservationWithTrip(reservation, relatedTrip)
         }
-        _uiState.value = ReservationsUiState(false, res)
+
+        _uiState.value = ReservationsUiState(
+            loading = false,
+            reservations = combined
+        )
     }
 
-    fun cancel(r: Reservation) = viewModelScope.launch {
-        Log.d("viewmodel", "canceling: ${r.id}")
-        repo.cancelById(r.id)
-        _uiState.update { it.copy(reservations = it.reservations - r) } // quita de la lista
+    fun cancel(rwt: ReservationWithTrip) = viewModelScope.launch {
+        Log.d("viewmodel", "canceling: ${rwt.reservation.id}")
+        repo.cancelById(rwt.reservation.id)
+        _uiState.update {
+            it.copy(reservations = it.reservations - rwt)
+        }
         load()
     }
 }
@@ -51,5 +71,10 @@ class ReservationsViewModel @Inject constructor(
 
 data class ReservationsUiState(
     val loading: Boolean = true,
-    val reservations:  List<Reservation> = emptyList()
+    val reservations:  List<ReservationWithTrip> = emptyList()
+)
+
+data class ReservationWithTrip(
+    val reservation: Reservation,
+    val trip: Trip?
 )

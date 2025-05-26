@@ -73,10 +73,11 @@ fun ReservationsScreen(vm: ReservationsViewModel = hiltViewModel()) {
             }
         }
 
-        items(ui.value.reservations) { r ->
+        items(ui.value.reservations) { rwt ->
             ReservationRow(
-                res = r,
-                onCancel = { vm.cancel(r) }
+                res = rwt.reservation,
+                trip = rwt.trip,
+                onCancel = { vm.cancel(rwt) }
             )
         }
     }

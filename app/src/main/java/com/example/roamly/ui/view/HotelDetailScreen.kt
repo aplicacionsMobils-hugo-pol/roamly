@@ -45,6 +45,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.roamly.BuildConfig
 import com.example.roamly.ui.components.RoomImageCarouselWithControls
 import com.example.roamly.ui.viewmodel.HotelDetailViewModel
+import com.example.roamly.ui.viewmodel.TripViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -60,7 +61,8 @@ fun HotelDetailScreen(
     start: String,
     end: String,
     navController: NavHostController,
-    vm: HotelDetailViewModel = hiltViewModel()
+    vm: HotelDetailViewModel = hiltViewModel(),
+    tripViewModel: TripViewModel = hiltViewModel()
 ) {
     val ui = vm.uiState.collectAsState()
     val base = BuildConfig.HOTELS_API_URL.trimEnd('/')

@@ -47,6 +47,10 @@ class TripViewModel @Inject constructor(
         Log.d("TripViewModel", "Viajes cargados: ${_trips.size} viajes encontrados.")
     }
 
+    fun refreshTrips() {
+        loadTrips()
+    }
+
     fun addTrip(destination: String, startDate: Date, endDate: Date, budget: Double, notes: String, isFavorite: Boolean, coverImageUrl: String?) {
         if (destination.isNotEmpty()) {
             Log.d(TAG, "Intentando agregar un nuevo viaje a $destination.")
