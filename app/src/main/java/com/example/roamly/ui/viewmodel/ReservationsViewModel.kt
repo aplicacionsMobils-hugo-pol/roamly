@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.roamly.BuildConfig
 import com.example.roamly.domain.models.Reservation
 import com.example.roamly.domain.repository.HotelRepository
+import com.google.firebase.auth.FirebaseAuth
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,13 +24,19 @@ class ReservationsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ReservationsUiState())
     val uiState: StateFlow<ReservationsUiState> = _uiState
 
+    private val auth = FirebaseAuth.getInstance()
+
     fun load() = viewModelScope.launch {
         _uiState.update { it.copy(loading = true) }
-
+        val email = auth.currentUser?.email
         //IMPORTANTE USANDO EL GROUP ID!!!
         //AQUI tambien buscar el correo del usuario authenticado!!
+        val res = if (email.isNullOrEmpty()) {
+            repo.getGroupReservations(BuildConfig.GROUP_ID, null)
+        } else {
+            repo.getGroupReservations(BuildConfig.GROUP_ID, email)
 
-        val res = repo.getGroupReservations(BuildConfig.GROUP_ID, "polmarsoluni@gmail.com")
+        }
         _uiState.value = ReservationsUiState(false, res)
     }
 

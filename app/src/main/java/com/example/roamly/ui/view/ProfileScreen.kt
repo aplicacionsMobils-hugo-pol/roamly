@@ -26,10 +26,9 @@ import com.example.roamly.R
 import com.example.roamly.domain.repository.UserRepository222
 import com.example.roamly.domain.models.User
 import com.example.roamly.ui.viewmodel.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 enum class ProfileSection {
-    ROUTES, FAVORITES, COMPLETED
+    ROUTES, RESERVATIONS, COMPLETED
 }
 
 @Composable
@@ -55,7 +54,7 @@ fun ProfileScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             when (selectedSection) {
                 ProfileSection.ROUTES -> UserTripsScreen()
-                ProfileSection.FAVORITES -> FavoriteTripsScreen()
+                ProfileSection.RESERVATIONS -> ReservationsScreen()
                 ProfileSection.COMPLETED -> CompletedTripsScreen(navController)
             }
         }
@@ -141,7 +140,7 @@ fun StatItem(value: Int, label: String) {
 @Composable
 fun ProfileTabs(selectedTab: ProfileSection, onTabSelected: (ProfileSection) -> Unit) {
     val tabs = listOf(stringResource(id = R.string.posts) to ProfileSection.ROUTES,
-        stringResource(id = R.string.favorites) to ProfileSection.FAVORITES,
+        stringResource(id = R.string.favorites) to ProfileSection.RESERVATIONS,
         stringResource(id = R.string.completed) to ProfileSection.COMPLETED)
 
     TabRow(
